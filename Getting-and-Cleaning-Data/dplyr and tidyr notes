@@ -1,0 +1,105 @@
+# Don't change any of the code below. Just type submit()
+# when you think you understand it.
+
+# We've already done this part, but we're repeating it
+# here for clarity.
+
+by_package <- group_by(cran, package)
+pack_sum <- summarize(by_package,
+                      count = n(),
+                      unique = n_distinct(ip_id),
+                      countries = n_distinct(country),
+                      avg_bytes = mean(size))
+
+# Here's the new bit, but using the same approach we've
+# been using this whole time.
+
+top_countries <- filter(pack_sum, countries > 60)
+result1 <- arrange(top_countries, desc(countries), avg_bytes)
+
+# Print the results to the console.
+print(result1)
+
+#################
+# Repeat your calls to gather() and separate(), but this time
+# use the %>% operator to chain the commands together without
+# storing an intermediate result.
+#
+# If this is your first time seeing the %>% operator, check
+# out ?chain, which will bring up the relevant documentation.
+# You can also look at the Examples section at the bottom
+# of ?gather and ?separate.
+#
+# The main idea is that the result to the left of %>%
+# takes the place of the first argument of the function to
+# the right. Therefore, you OMIT THE FIRST ARGUMENT to each
+# function.
+#
+students2 %>%
+  gather(sex_class, count, -grade) %>%
+  separate( sex_class, c("sex", "class")) %>%
+  print
+
+################
+# This script builds on the previous one by appending
+# a call to spread(), which will allow us to turn the
+# values of the test column, midterm and final, into
+# column headers (i.e. variables).
+#
+# You only need to specify two arguments to spread().
+# Can you figure out what they are? (Hint: You don't
+# have to specify the data argument since we're using
+# the %>% operator.
+#
+students3 %>%
+  gather(class, grade, class1:class5, na.rm = TRUE) %>%
+  spread(test, grade) %>%
+  mutate(class=extract_numeric(class)) %>%
+  print
+
+
+
+####################
+
+| The SAT is a popular college-readiness exam in the United States that consists of three sections: critical reading, mathematics, and writing. Students can
+| earn up to 800 points on each section. This dataset presents the total number of students, for each combination of exam section and sex, within each of
+| six score ranges. It comes from the 'Total Group Report 2013', which can be found here:
+| 
+| http://research.collegeboard.org/programs/sat/data/cb-seniors-2013
+
+
+##########
+# Accomplish the following three goals:
+#
+# 1. select() all columns that do NOT contain the word "total",
+# since if we have the male and female data, we can always
+# recreate the total count in a separate column, if we want it.
+# Hint: Use the contains() function, which you'll
+# find detailed in 'Special functions' section of ?select.
+#
+# 2. gather() all columns EXCEPT score_range, using
+# key = part_sex and value = count.
+#
+# 3. separate() part_sex into two separate variables (columns),
+# called "part" and "sex", respectively. You may need to check
+# the 'Examples' section of ?separate to remember how the 'into'
+# argument should be phrased.
+#
+sat %>%
+  select(-contains("total")) %>%
+  gather(part_sex, count, -score_range) %>%
+  separate(part_sex, into=c("part","sex")) %>%
+  print
+
+
+###################
+| For a complete list of valid time zones for use with lubridate, check out the following Wikipedia page:
+| 
+| http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+
+##################
+| To address these complexities, the authors of lubridate introduce four classes of time related objects: instants, intervals, durations, and periods. These
+| topics are beyond the scope of this lesson, but you can find a complete discussion in the 2011 Journal of Statistical Software paper titled 'Dates and
+| Times Made Easy with lubridate'.
+
+
