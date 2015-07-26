@@ -25,10 +25,25 @@ Project Definition
 Tidy-data Preparation Process
 -----------------------------
 1. Install and load all required packages
+ * downloader
+ * data.table
+ * reshape2
 2. Set working directory
 3. Download and unzip data files
-4. 
-
-### Required Packages
-
-### Setting 
+4. Read the subject, activity labels and data files (both training and test)
+5. Merge the training and test data sets (for each activity and subject)
+6. Join the activity and subject
+7. Extract only the mean and standard deviation
+  * Subset only measurements for the mean and standard deviation
+  * Convert the column numbers to a vector of variable names
+  * Subset these variables using variable names
+  * Label activity name variables (columns) from the activity_labels.txt
+8. Label activity name variables (columns) from the activity_labels.txt
+  * Add the descriptive activity name
+  * Use activityName as a key
+  * Transpose the data to get tidy data
+  * Merge activity name
+  * Create new variables, activity and feature, that is equivalent to activityName and featureName
+  * Classify the measurement by time/frequency domain, Instruments, Acceleration type, etc.
+9. Create a tidy data set with the average of each variable for each activity and each subject
+10. Export tidy data set to a file
