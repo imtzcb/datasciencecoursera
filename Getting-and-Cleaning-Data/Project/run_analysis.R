@@ -126,10 +126,10 @@ dtActivityData$featVariable <- factor(x %*% y, labels=c("Mean", "SD"))
 # Identify Jerk category
 dtActivityData$featJerk <- factor(findCategories("Jerk"), labels=c(NA, "Jerk"))
 
-## Identify Magnitude category
+# Identify Magnitude category
 dtActivityData$featMagnitude <- factor(findCategories("Mag"), labels=c(NA, "Magnitude"))
 
-## Features with 3 categories
+# Identify X, Y, Z Axis Category
 y <- matrix(seq(1, 3), nrow=3)
 
 x <- matrix(c(findCategories("-X"), findCategories("-Y"), findCategories("-Z")), ncol=nrow(y))
