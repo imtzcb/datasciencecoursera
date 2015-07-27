@@ -2,21 +2,25 @@
 Variable list and descriptions
 --------
 
-subject	ID: the subject who performed the activity for each window sample. Its range is from 1 to 30.
-activity:	Activity name
-featDomain Time domain signal or frequency domain signal (Time or Freq)
-featInstrument: Measuring instrument (Accelerometer or Gyroscope)
-featAcceleration:	Acceleration signal (Body or Gravity)
-featVariable:	Variable (Mean or SD)
-featJerk: Jerk signal
-featMagnitude: Magnitude of the signals calculated using the Euclidean norm
-featAxis: 3-axial signals in the X, Y and Z directions (X, Y, or Z)
-featCount: Count of data points used to compute average
-featAverage: Average of each variable for each activity and each subject
+|Variable name| Description|
+|:-----------|-----------|
+|subject ID| The subject who performed the activity for each window sample. Its range is from 1 to 30|
+|activity|	Activity name|
+|featDomain| Time domain signal or frequency domain signal (Time or Freq)|
+|featInstrument| Measuring instrument (Accelerometer or Gyroscope)|
+|featAcceleration|	Acceleration signal (Body or Gravity)|
+|featVariable|	Variable (Mean or SD)|
+|featJerk| Jerk signal|
+|featMagnitude| Magnitude of the signals calculated using the Euclidean norm|
+|featAxis| 3-axial signals in the X, Y and Z directions (X, Y, or Z)|
+|featCount| Count of data points used to compute average|
+|featAverage| Average of each variable for each activity and each subject|
 
 Dataset structure
 -----------
-str(dtTidy)
+`str(dtTidy)`
+
+```
 Classes 'data.table' and 'data.frame':   11880 obs. of  11 variables:
 subject         : int  1 1 1 1 1 1 1 1 1 1 ...
 activity        : Factor w/ 6 levels "LAYING","SITTING",..: 1 1 1 1 1 1 1 1 1 1 ...
@@ -31,3 +35,4 @@ count           : int  50 50 50 50 50 50 50 50 50 50 ...
 average         : num  -0.0166 -0.0645 0.1487 -0.8735 -0.9511 ...
 attr(*, "sorted")= chr  "subject" "activity" "featDomain" "featAcceleration" ...
 attr(*, ".internal.selfref")=<externalptr>
+```
