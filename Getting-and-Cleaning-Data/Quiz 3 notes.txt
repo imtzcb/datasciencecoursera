@@ -1,0 +1,48 @@
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv" 
+download.file(fileUrl, destfile = "housing.csv", method = "curl")
+
+library(data.table)
+
+idahoHousingData <- read.table("housing.csv", sep = ",", header = TRUE) ##Read file into memory 
+idahoHousingDT <- data.table(idahoHousingData) ## Load into Data table
+
+idahoHousingDT[(idahoHousingDT$var1 <= 3 & idahoHousingDT$var3 > 11),]
+
+ agricultureLogical <- idahoHousingDT[,(ACR==3&AGS==6)]
+> which(agricultureLogical) 
+
+
+url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fjeff.jpg"
+download.file(url, "jeff.jpg, mode = "wb")
+img <- readJPEG(f, native = TRUE)
+quantile(img, probs = c(0.3, 0.8))
+
+
+fileUrl <- "httphttps://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv" 
+download.file(fileUrl, destfile = "GDP.csv", mode="w")
+gdpData <- read.table("GDP.csv", sep = ",", header = TRUE) ##Read file into memory 
+
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv" 
+download.file(fileUrl, destfile = "edu.csv", mode="w)
+dtGDP <- data.table(read.csv("edu.csv", skip = 4, nrows = 190))
+
+dtGDP <- dtGDP[X != ""]
+
+dtGDP <- dtGDP[, list(X, X.1, X.3, X.4)]
+setnames(dtGDP, c("X", "X.1", "X.3", "X.4"), c("CountryCode", "rankingGDP", 
+    "Long.Name", "gdp"))
+
+url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv"
+f <- file.path(getwd(), "edu.csv")
+download.file(url, f)
+dtEd <- data.table(read.csv(f))
+dtMrg <- merge(dtGDP, dtEd, all = TRUE, by = c("CountryCode"))
+sum(!is.na(unique(dt$rankingGDP)))
+
+dtMrg[order(rankingGDP, decreasing = TRUE), list(CountryCode, Long.Name.x, Long.Name.y, rankingGDP, gdp)][13]
+
+dt[, mean(rankingGDP, na.rm = TRUE), by = Income.Group]
+
+breaks <- quantile(dt$rankingGDP, probs = seq(0, 1, 0.2), na.rm = TRUE)
+dtMrg$quantileGDP <- cut(dtMrg$rankingGDP, breaks = breaks)
+dtMrg[Income.Group == "Lower middle income", .N, by = c("Income.Group", "quantileGDP")]
