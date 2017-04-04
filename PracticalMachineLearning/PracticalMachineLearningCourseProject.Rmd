@@ -1,0 +1,146 @@
+---
+title: "Practical Machine Learning Course Project"
+author: "I. Martinez"
+date: "April 3, 2017"
+output: html_document
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <http://groupware.les.inf.puc-rio.br/har> (see the section on the Weight Lifting Exercise Dataset).
+
+## Objective
+The goal of your project is to predict the manner in which they did the exercise.
+
+## Data
+
+The training data for this project are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. Thank you for your generousity in letting us use your data for our learning.
+
+## Data Analysis and Preparation
+
+```{r setup}
+library(caret)
+library(ggplot2)
+set.seed(88388)
+setwd("C:/Other/Git/DataScienceTrack/PracticalMachineLearning")
+```
+
+```{r TrainDownload}
+trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+training <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))
+
+dim(training)
+#str(training)
+```
+The training data set contains 19622 observations and 160 variables. Many variables contain mostly NA's so our next step is to remove some of these variables that have no data or are not necessary. This will reduce the number of variables to 53.
+```{r TrainCleansing}
+train=training[,colSums(is.na(training))<(nrow(training)*0.9)]
+train=subset(train, select=-c(X,user_name,raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp,new_window,num_window ))
+dim(train)
+
+```
+
+## Train Models and Evaluate on Held-out Set
+We will now partition the data into parts, and for initial inspection train models only on a random sample of 1000 train and 1000 dev instances to select which method to take. We use Naive Bayes (NB) as baseline method. Assuming that the variables are not independent, we expect it to be a bad model. The random forests should work better. Finally we will compare them to support vector machines (SVM) with a linear and polynomial kernel
+```{r ModelTraining, cache=TRUE}
+inTrain <- createDataPartition(train$classe, p=0.7,list=FALSE) 
+length(inTrain)
+inTrain=sample(inTrain,size=1000,replace=FALSE) #subset for testing
+training <- train[inTrain,]
+testing <- train[-inTrain,]
+testing=testing[sample(nrow(testing), 1000),] #random rows
+# we create the different models
+model_rf=train(classe~.,data=training,method="rf")
+#model_nb=train(classe~.,data=training,method="nb")
+#model_svm=train(classe~.,data=training,method="svmLinear")
+#model_pol=train(classe~.,data=training,method="svmPoly")
+predictions_rf=predict(model_rf,newdata=testing)
+accuracy=sum(predictions_rf == testing$classe)/length(testing$classe) #or
+#predictions=predict(model_nb,newdata=testing)
+#accuracy=sum(predictions == testing$classe)/length(testing$classe) #or
+#predictions=predict(model_svm,newdata=testing)
+#accuracy=sum(predictions == testing$classe)/length(testing$classe) #or
+#predictions=predict(model_pol,newdata=testing)
+#accuracy=sum(predictions == testing$classe)/length(testing$classe) #or
+```
+As expected, the worst model is naive Bayes (NB) and The best model is random forest. More specifically, on the 1000 data sample, the accuracies we get are:
+
+- RF accuracy: 90%
+- NB accuracy: 65%
+- svmLinear: 72%
+- svmPoly: 84%
+
+```{r ConfusionMatrix}
+confusionMatrix(predictions_rf,testing$classe)
+```
+
+## Feature selection
+Now we will find the top-20 features of the RF model and train on the whole data set partition.
+```{r Top20}
+varImp(model_rf)
+qplot(roll_belt,pitch_forearm,data=training,color=classe)
+```
+
+We now use only the top-20 features to train an RF model.
+```{r reTrainModel, cache=TRUE}
+inTrain <- createDataPartition(train$classe, p=0.7,list=FALSE) #same as [[1]] instead of list=FALSE
+length(inTrain)
+training <- train[inTrain,]
+testing <- train[-inTrain,]
+training=subset(training,select=c(roll_belt,pitch_forearm,magnet_dumbbell_y,magnet_dumbbell_z,yaw_belt,roll_dumbbell,magnet_belt_y,accel_belt_z,magnet_belt_z ,magnet_arm_x,magnet_dumbbell_x,accel_dumbbell_y,pitch_belt,accel_forearm_x,roll_forearm,magnet_arm_y,accel_dumbbell_x,magnet_forearm_y,gyros_dumbbell_y,accel_arm_x,classe))
+dim(training)
+```
+
+So far we have trained models on only a subset of the data. To get an estimate of the out-of-sample error we train a random forest model on the whole training data using cross-validation.
+```{r TrainRFCV, cache=TRUE}
+fitControl <- trainControl(## 10-fold CV
+                           method = "repeatedcv",
+                           number = 10,
+                           repeats = 10)
+model=train(classe~.,data=training,method="rf",trControl=fitControl)
+```
+From the cross validation accuracy (98.9%) we can get an estimated of the out-of-sample performance.
+## Final model
+
+We train the final model using the seleted features on the entire training data set and evaluate it on the test set of 20 instances
+
+```{r FinalModel, cache=TRUE}
+model=train(classe~.,data=training,method="rf")
+predictions=predict(model,newdata=testing)
+accuracy=sum(predictions == testing$classe)/length(testing$classe) #or:
+accuracy
+confusionMatrix(predictions,testing$classe)
+```
+We reach an accuracy of 99.81% on the held-out set. More specifically, the sensitivity and specificity per class is, respectively: A 0.9988/0.9993, B 0.9939/0.9992, C 0.9981/0.9992, D 1.0/1.0, E 1.0/1.0.
+
+Now we run it on the real test data and write the predictions to the files. Submitting the test run on the website shows that we actually got an accuracy of 100% (with just 20 features). Thus, our estimate holds.
+
+```{r TestModel, cache=TRUE}
+testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+testing <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
+testing=subset(testing,select=c(roll_belt,pitch_forearm,magnet_dumbbell_y,magnet_dumbbell_z,yaw_belt,roll_dumbbell,magnet_belt_y,accel_belt_z,magnet_belt_z ,magnet_arm_x,magnet_dumbbell_x,accel_dumbbell_y,pitch_belt,accel_forearm_x,roll_forearm,magnet_arm_y,accel_dumbbell_x,magnet_forearm_y,gyros_dumbbell_y,accel_arm_x))
+dim(testing)
+predictionsTest=predict(model,newdata=testing)
+length(predictionsTest)
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("predict_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(predictionsTest)
+```
